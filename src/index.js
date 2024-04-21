@@ -1,5 +1,10 @@
 import "./style.css";
 import { startOfDay,getDate } from "date-fns";
+import Project from "./Project";
+import Task from "./Task";
+import {importProjectsFromLocalStorage, exportProjectsToLocalStorage} from "./Project";
+
+let allProjects= importProjectsFromLocalStorage("allprojects");
 
 const today = document.querySelector("#today");
 const allTasks = document.querySelector("#allTasks");
@@ -9,20 +14,11 @@ const btnAddNewTask = document.querySelector(".btnAddNewTask");
 const addNewProject = document.querySelector(".addNewProject");
 const barTitle = document.querySelector(".barTitle");
 const projectsList = document.querySelector(".projectsList");
-let allProjects= [];
-
-let projectsAll = JSON.parse(localStorage.getItem("allProjects")) || [];
 
 
-class Task {
-    constructor(title, description, date, priority, status){
-        this.title = title;
-        this.description = description;
-        this.date = date;
-        this.priority = priority;
-        this.status = status;
-    }
-}
+
+
+makeProject();
 
 
 let canClikAgain = true;
@@ -56,28 +52,12 @@ function forAddingNewProject(){
                 projectsList.removeChild(projectsList.lastChild);
                 const p = new Project();
                 p.title = projectName.value
-                
-                projectsAll.push(p)
-              
-            
-                
-                localStorage.setItem("allProjects", JSON.stringify(projectsAll));
-               
-                
-                //allProjects.push(p);
+                allProjects.push(p);
+                exportProjectsToLocalStorage("allprojects", allProjects);
                 makeProject();
                 canClikAgain = true;
-
-
-                // const obj2 = JSON.parse(localStorage.getItem("allProjects"))
-                //  obj2.addTaskIntoProject = Project.prototype.addTaskIntoProject;
-                 // obj2.removeTask = Project.prototype.removeTask;
-
-                  // localStorage.setItem("allProjects", JSON.stringify(projectsAll));
-                // localStorage.setItem("tasks", JSON.stringify(p.tasks));
-                //allProjects.push(p);
                 
-                //allProjects.push(obj2);
+
             }
         })
 
@@ -112,32 +92,15 @@ addNewProject.addEventListener("click", () => {
     
 })
 
-
-class Project {
-    constructor(title){
-        this.title=title;
-        this.tasks = [];
-    }
-    addTaskIntoProject(task){
-        
-        this.tasks.push(task);
-    }
-    removeTask(index){
-        this.tasks.splice(index,1);
-    }
-   
-    
-}
  
-
 function  makeProject(){
-    let all = JSON.parse(localStorage.getItem("allProjects"))
+    
     
     while(projectsList.firstChild){
         projectsList.removeChild(projectsList.lastChild);
     }
-    all.forEach(pro => {
-        let index = all.indexOf(pro);
+    allProjects.forEach(pro => {
+        let index = allProjects.indexOf(pro);
         
     const projectBox = document.createElement("div");
     projectBox.classList.add("projectBox");
@@ -231,21 +194,10 @@ function  makeProject(){
                     task.priority = "priority";
                 }
                 
-                
                 task.date = datePicker.value;
-                
                 pro.addTaskIntoProject(task);
+                exportProjectsToLocalStorage("allprojects", allProjects);
 
-                localStorage.setItem("allProjects", JSON.stringify(projectsAll));
-
-                //pro.addTaskIntoProject(task);
-                
-                // const obj2 = JSON.parse(localStorage.getItem("tasks"))
-                // const project = JSON.parse(localStorage.getItem("project"))
-                // project.tasks.Add(obj2)
-                //  pro.addTaskIntoProject(obj2);
-               
-                //let indexx = pro.tasks.indexOf(task);
                 makeTask(task,pro);
                 
                
@@ -287,8 +239,7 @@ function  makeProject(){
     projectBox.appendChild(removeProject);
     removeProject.addEventListener("click", ()=> {
         allProjects.splice(index,1);
-        
-        //JSON.parse(localStorage.getItem("project"))
+        exportProjectsToLocalStorage("allprojects", allProjects);
         makeProject();
         barTitle.textContent = "";
         btnAddNewTask.innerHTML = "";
@@ -306,8 +257,6 @@ function displayTasks(pro){
       })
 }
 
-
-//localStorage.clear();
 
 function makeTask(task,pro){
 
@@ -362,6 +311,7 @@ function makeTask(task,pro){
         
         
         pro.removeTask(pro.tasks.indexOf(task));
+        exportProjectsToLocalStorage("allprojects", allProjects);
         
         tasksInRight.innerHTML = "";
         displayTasks(pro);
@@ -372,6 +322,17 @@ function makeTask(task,pro){
     tasksInRight.appendChild(taskBox);
  }
 
+function initialDIsplay(){
+    barTitle.textContent = allTasks.innerHTML;
+    btnAddNewTask.innerHTML = "";
+    tasksInRight.innerHTML = "";
+    allProjects.forEach(project => {
+        project.tasks.forEach(taskInProject => {
+            makeTask(taskInProject);
+            
+          })
+    })
+}
 
 allTasks.addEventListener("click" , () => {
    
